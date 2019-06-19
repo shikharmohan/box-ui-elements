@@ -74,11 +74,6 @@ describe('elements/content-sidebar/ActivityFeed/task-new/Task', () => {
         expect(wrapper).toMatchSnapshot();
     });
 
-    test('should set assigned_to state when component mounts', () => {
-        const wrapper = shallow(<Task currentUser={currentUser} {...task} />);
-        expect(wrapper.state('assigned_to')).toEqual(task.assigned_to);
-    });
-
     test('should show assignment status badges for each assignee', () => {
         const wrapper = mount(<Task currentUser={currentUser} onEdit={jest.fn()} onDelete={jest.fn()} {...task} />);
         expect(wrapper.find('[data-testid="avatar-group-avatar-container"]')).toHaveLength(2);
@@ -285,4 +280,42 @@ describe('elements/content-sidebar/ActivityFeed/task-new/Task', () => {
 
         expect(instance.fetchTaskCollaborators).toBeCalled();
     });
+
+    test('should open assignee list when expand button is clicked', () => {
+        const taskWithTwentyAssignees = {
+            ...task,
+            assigned_to: {
+                next_marker: null,
+                entries: Array(30).fill({
+                    id: 'current-user-assignment-id',
+                    target: currentUser,
+                    status: 'NOT_STARTED',
+                    role: 'ASSIGNEE',
+                    permissions: {
+                        can_update: true,
+                        can_delete: true,
+                    },
+                    type: 'task_collaborator',
+                }),
+            },
+        };
+
+        const wrapper = mount(
+            <Task
+                currentUser={currentUser}
+                onEdit={jest.fn()}
+                onDelete={jest.fn()}
+                {...taskWithTwentyAssignees}
+                due_at={new Date() + 1000}
+            />,
+        );
+
+        const expandBtn = global.queryAllByTestId(wrapper, 'show-more-assignees').first();
+        expandBtn.simulate('click');
+
+        const assigneeList = global.queryAllByTestId(wrapper, 'assignee-list-item');
+        expect(assigneeList).toHaveLength(3);
+    });
+
+    test('should hide assignee list when hide button is clicked', () => {});
 });

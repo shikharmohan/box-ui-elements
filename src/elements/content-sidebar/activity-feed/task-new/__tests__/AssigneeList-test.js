@@ -41,6 +41,7 @@ const assignees = {
 
 const mockGetAvatarUrl = () => Promise.resolve('url.jpg');
 const onExpand = jest.fn(() => {});
+const onCollapse = jest.fn(() => {});
 
 describe('elements/content-sidebar/ActivityFeed/task-new/AssigneeList', () => {
     describe('render()', () => {
@@ -133,54 +134,11 @@ describe('elements/content-sidebar/ActivityFeed/task-new/AssigneeList', () => {
             expect(global.queryAllByTestId(wrapper.dive(), 'show-less-assignees')).toHaveLength(0);
         });
 
-        test('should open assignee list when expand button is clicked', () => {
+        test('should call onExpand when expand button is clicked', () => {
             const initialCount = 2;
             const wrapper = mount(
                 <AssigneeList
-                    onExpand={onExpand}
-                    users={assignees}
-                    initialAssigneeCount={initialCount}
-                    getAvatarUrl={mockGetAvatarUrl}
-                />,
-            );
-            const expandBtn = global.queryAllByTestId(wrapper, 'show-more-assignees').first();
-            expandBtn.simulate('click');
-
-            const assigneeList = global.queryAllByTestId(wrapper, 'assignee-list-item');
-            expect(assigneeList).toHaveLength(3);
-        });
-
-        test('should hide assignee list when hide button is clicked', () => {
-            const initialCount = 2;
-            const wrapper = mount(
-                <AssigneeList
-                    onExpand={onExpand}
-                    users={assignees}
-                    initialAssigneeCount={initialCount}
-                    getAvatarUrl={mockGetAvatarUrl}
-                />,
-            );
-
-            const expandBtn = global.queryAllByTestId(wrapper, 'show-more-assignees').first();
-            expandBtn.simulate('click');
-
-            let assigneeList = global.queryAllByTestId(wrapper, 'assignee-list-item');
-            expect(assigneeList).toHaveLength(3);
-
-            const hideBtn = global.queryAllByTestId(wrapper, 'show-less-assignees').first();
-            hideBtn.simulate('click');
-
-            assigneeList = global.queryAllByTestId(wrapper, 'assignee-list-item');
-            expect(assigneeList).toHaveLength(2);
-
-            expect(onExpand).not.toHaveBeenCalled();
-        });
-
-        test('should call onExpand when marker is present in user list', () => {
-            const initialCount = 2;
-            assignees.next_marker = 'abc';
-            const wrapper = mount(
-                <AssigneeList
+                    isOpen={false}
                     onExpand={onExpand}
                     users={assignees}
                     initialAssigneeCount={initialCount}
@@ -192,6 +150,25 @@ describe('elements/content-sidebar/ActivityFeed/task-new/AssigneeList', () => {
             expandBtn.simulate('click');
 
             expect(onExpand).toHaveBeenCalled();
+        });
+
+        test('should call onCollapse when hide button is clicked', () => {
+            const initialCount = 2;
+            const wrapper = mount(
+                <AssigneeList
+                    isOpen
+                    onExpand={onExpand}
+                    onCollapse={onCollapse}
+                    users={assignees}
+                    initialAssigneeCount={initialCount}
+                    getAvatarUrl={mockGetAvatarUrl}
+                />,
+            );
+
+            const hideBtn = global.queryAllByTestId(wrapper, 'show-less-assignees').first();
+            hideBtn.simulate('click');
+
+            expect(onCollapse).toHaveBeenCalled();
         });
     });
 });
